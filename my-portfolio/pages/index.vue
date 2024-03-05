@@ -18,29 +18,29 @@
 
 <script>
 import gsap from 'gsap'
-import { 
-  PlaneGeometry, 
-  BufferAttribute, 
-  Raycaster, 
-  Scene, 
-  PerspectiveCamera, 
-  WebGLRenderer,
-  MeshPhongMaterial,
-  DoubleSide,
-  FlatShading,
-  Mesh,
-  DirectionalLight,
-  BufferGeometry,
-  PointsMaterial,
-  Float32BufferAttribute,
-  Points,
-  Color
-} from 'three'
-import OrbitControls from 'orbit-controls-es6'
 
 export default {
-  mounted() {
-    const dat = require('dat.gui')
+  async mounted() {
+    const {
+      PlaneGeometry, 
+      BufferAttribute, 
+      Raycaster, 
+      Scene, 
+      PerspectiveCamera, 
+      WebGLRenderer,
+      MeshPhongMaterial,
+      DoubleSide,
+      Mesh,
+      DirectionalLight,
+      BufferGeometry,
+      PointsMaterial,
+      Float32BufferAttribute,
+      Points,
+      Color
+    } = await import('three')
+    const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls')
+    const dat = await require('dat.gui')
+    
     // GUI setup for controls
     const gui = new dat.GUI()
     const world = {
@@ -126,7 +126,8 @@ export default {
 
     const planeMaterial = new MeshPhongMaterial({
       side: DoubleSide,
-      flatShading: FlatShading,
+      shininess: 30,
+      flatShading: true,
       vertexColors: true
     })
 

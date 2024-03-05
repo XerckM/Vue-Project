@@ -2,35 +2,35 @@
     <div>
         <canvas ref="workCanvas" data-engine="three.js r146"></canvas>
         <div>
-            <h2 class="text-white exo-2-font text-5xl">MY WORK</h2>
+            <h2 class="text-white exo-2-font text-5xl z-10">MY WORK</h2>
         </div>
     </div>
 </template>
 
 <script>
-import { 
-    Vector3,
-    Scene,
-    FogExp2,
-    PerspectiveCamera,
-    WebGLRenderer,
-    sRGBEncoding,
-    ACESFilmicToneMapping,
-    Vector2,
-    ShaderMaterial,
-} from 'three'
-import OrbitControls from 'orbit-controls-es6';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
-import { CompositionShader } from '~/assets/js/shaders/compositionShader'
-import { BASE_LAYER, BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER } from "~/assets/js/config/renderConfig"
-import { Star } from '~/assets/js/objects/star'
-import { Galaxy } from '~/assets/js/objects/galaxy'
-
 export default {
     async mounted() {
+        const { 
+            Vector3,
+            Scene,
+            FogExp2,
+            PerspectiveCamera,
+            WebGLRenderer,
+            sRGBEncoding,
+            ACESFilmicToneMapping,
+            Vector2,
+            ShaderMaterial,
+        } = await import('three')
+        const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls')
+        const { EffectComposer } = await import('three/examples/jsm/postprocessing/EffectComposer')
+        const { RenderPass } = await import('three/examples/jsm/postprocessing/RenderPass')
+        const { ShaderPass } = await import('three/examples/jsm/postprocessing/ShaderPass')
+        const { UnrealBloomPass } = await import('three/examples/jsm/postprocessing/UnrealBloomPass')
+        const { CompositionShader } = await import('~/assets/js/shaders/compositionShader')
+        const { BLOOM_LAYER, BLOOM_PARAMS, OVERLAY_LAYER, BASE_LAYER } = await import('../assets/js/config/renderConfig')
+        const { Galaxy } = await import('../assets/js/objects/galaxy')
+        const { Star } = await import('../assets/js/objects/star')
+        
         if (process.client) {
             let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, galaxy
 
