@@ -42,7 +42,7 @@ export default {
     const dat = await require('dat.gui')
     
     // GUI setup for controls
-    const gui = new dat.GUI()
+    // const gui = new dat.GUI()
     const world = {
       plane: {
         width: 500,
@@ -52,10 +52,10 @@ export default {
       }
     }
 
-    gui.add(world.plane, 'width', 1, 500).onChange(generatePlane)
-    gui.add(world.plane, 'height', 1, 500).onChange(generatePlane)
-    gui.add(world.plane, 'widthSegments', 1, 100).onChange(generatePlane)
-    gui.add(world.plane, 'heightSegments', 1, 100).onChange(generatePlane)
+    // gui.add(world.plane, 'width', 1, 500).onChange(generatePlane)
+    // gui.add(world.plane, 'height', 1, 500).onChange(generatePlane)
+    // gui.add(world.plane, 'widthSegments', 1, 100).onChange(generatePlane)
+    // gui.add(world.plane, 'heightSegments', 1, 100).onChange(generatePlane)
 
     function generatePlane() {
       planeMesh.geometry.dispose()
@@ -238,14 +238,14 @@ export default {
       
       for (let i = 0; i < colors.count; i += 3) {
           // Randomly decide whether to flash this vertex
-          if (Math.random() > 0.995) { // Adjust this value to control frequency
-              const flashDuration = 2 + Math.random(); // Make flash duration longer, between 2 and 5 seconds
+          if (Math.random() > 0.995) {
+              const flashDuration = 2 + Math.random();
               
               // Generate a variation of blue or a complementary color that blends well
               const color = new Color(
-                  0.1, // Keep it close to the blue spectrum
-                  0.5, // Variation around the original blue
-                  1 // Brighter shades of blue
+                  0.1,
+                  0.5,
+                  1
               );
               
               // Flash the color on
@@ -253,8 +253,8 @@ export default {
                   r: color.r,
                   g: color.g,
                   b: color.b,
-                  duration: flashDuration / 2, // Half duration for the flash on
-                  ease: "power1.inOut", // Smooth transition for flashing on
+                  duration: flashDuration / 2,
+                  ease: "power1.inOut",
                   onUpdate: function() {
                       colors.setXYZ(i, this.targets()[0].r, this.targets()[0].g, this.targets()[0].b);
                       colors.needsUpdate = true;
@@ -262,9 +262,10 @@ export default {
                   onComplete: () => {
                       // Fade off back to original color slowly
                       gsap.to({r: color.r, g: color.g, b: color.b}, {
-                          r: 0, g: 0.18, b: 0.5, // Original color
-                          duration: flashDuration / 2, // Half duration for fading off, ensures a slow fade
-                          ease: "power1.inOut", // Smooth transition for fading off
+                          // Original color
+                          r: 0, g: 0.18, b: 0.5, 
+                          duration: flashDuration / 2,
+                          ease: "power1.inOut",
                           onUpdate: function() {
                               colors.setXYZ(i, this.targets()[0].r, this.targets()[0].g, this.targets()[0].b);
                               colors.needsUpdate = true;
@@ -364,6 +365,6 @@ export default {
 
 <style>
 .colored-word {
-  color: #FFD700;
+  color: #24fa24;
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
     <div>
-        <canvas ref="workCanvas" data-engine="three.js r146"></canvas>
-        <div>
-            <h2 class="text-white exo-2-font text-5xl z-10">MY WORK</h2>
-        </div>
+        <canvas ref="workCanvas" data-engine="three.js r146" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
+        <h2 class="text-white exo-2-font text-5xl" style="z-index: 1; position: relative;">MY WORK</h2>
     </div>
 </template>
 
 <script>
+import gsap from 'gsap'
+
 export default {
     async mounted() {
         const { 
@@ -35,31 +35,21 @@ export default {
             let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, galaxy
 
             const generateBackgroundStars = async (numStars) => {
-                const innerBoundary = 600; // Minimum distance from the galaxy center to start generating stars
-                const outerBoundary = 100; // Maximum distance from the galaxy center where stars can be generated
-                const galaxyCenter = new Vector3(0, 0, 0); // Assuming the galaxy is at the origin for simplicity
-
-                // Calculate a vector pointing from the camera to the galaxy's center
-                const cameraToGalaxyVector = new Vector3().subVectors(galaxyCenter, camera.position).normalize();
+                const innerBoundary = 560; // Minimum distance from the galaxy center to start generating stars
 
                 for (let i = 0; i < numStars; i++) {
                     let starPosition;
-                    do {
-                        // Spherical coordinates system
-                        const r = Math.random() * (outerBoundary - innerBoundary) + innerBoundary;
-                        const theta = Math.random() * Math.PI * 2; // Azimuthal angle
-                        const phi = Math.acos((Math.random() * 2) - 1); // Polar angle
+                    // Spherical coordinates system
+                    const r = Math.random() * 5000 + innerBoundary; // Adjust as necessary
+                    const theta = Math.random() * Math.PI * 2; // Azimuthal angle
+                    const phi = Math.acos((Math.random() * 2) - 1); // Polar angle
 
-                        // Convert spherical coordinates to Cartesian coordinates for the star's position
-                        const x = r * Math.sin(phi) * Math.cos(theta);
-                        const y = r * Math.sin(phi) * Math.sin(theta);
-                        const z = r * Math.cos(phi);
+                    // Convert spherical coordinates to Cartesian coordinates for the star's position
+                    const x = r * Math.sin(phi) * Math.cos(theta);
+                    const y = r * Math.sin(phi) * Math.sin(theta);
+                    const z = r * Math.cos(phi);
 
-                        starPosition = new Vector3(x, y, z);
-
-                        // Check the dot product to ensure stars are predominantly behind the galaxy from the camera's view
-                        // Adjust this logic as needed based on your scene's specific orientation and requirements
-                    } while (cameraToGalaxyVector.dot(starPosition.clone().normalize()) < 0);
+                    starPosition = new Vector3(x, y, z);
 
                     // Create a new star at the generated position
                     const backgroundStar = new Star(starPosition, true);
@@ -70,10 +60,11 @@ export default {
             const initThree = async () => {
                 canvas = this.$refs.workCanvas
                 scene = new Scene()
+                scene.position.set(0, 0, 50)
                 scene.fog = new FogExp2(0xEBE2DB, 0.00003)
 
-                camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 5000000);
-                camera.position.set(100, 500, 500); // Original position
+                camera = new PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 5000000);
+                camera.position.set(1000, 5000, 250000); // Original position
                 camera.up.set(0, 0.5, 1);
                 const lookAtOffset = new Vector3(100, 0, 30);
                 camera.lookAt(lookAtOffset);
@@ -82,18 +73,38 @@ export default {
                 orbit.enableDamping = true;
                 orbit.dampingFactor = 0.05;
                 orbit.screenSpacePanning = false;
-                
-                // Prevent zooming in and out
-                const fixedDistance = 700;
-                orbit.minDistance = fixedDistance;
-                orbit.maxDistance = fixedDistance;
-
                 orbit.maxPolarAngle = Math.PI / 2 - Math.PI / 360;
 
                 initRenderPipeline()
                 galaxy = new Galaxy(scene)
 
-                generateBackgroundStars(10000);
+                gsap.to(camera.position, {
+                    x: 100,
+                    y: 500,
+                    z: 500,
+                    duration: 4, // Duration of the zoom in seconds
+                    ease: 'expoScale',
+                    onUpdate: () => {
+                        camera.lookAt(scene.position);
+                    },
+                    onComplete: () => {
+                        generateBackgroundStars(10000);
+                        gsap.to(scene.rotation, {
+                            x: Math.PI, // Adds 360 degrees in radians to current x rotation
+                            y: Math.PI, // Adds 360 degrees in radians to current y rotation
+                            duration: 5,
+                            ease: 'sine.inOut', // Linear movement for uniform spinning speed
+                        });
+                    }
+                });
+
+                // Animate the scene to rotate around both X and Y axes
+                gsap.to(scene.rotation, {
+                    x: Math.PI, // Adds 360 degrees in radians to current x rotation
+                    y: Math.PI, // Adds 360 degrees in radians to current y rotation
+                    duration: 6,
+                    ease: 'sine.in', // Linear movement for uniform spinning speed
+                });
             }
 
             const initRenderPipeline = () => {
@@ -185,6 +196,12 @@ export default {
                 camera.layers.set(BASE_LAYER)
                 baseComposer.render()
             }
+
+            addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight
+                camera.updateProjectionMatrix()
+                renderer.setSize(window.innerWidth, window.innerHeight)
+            })
 
             await initThree()
             requestAnimationFrame(render)
