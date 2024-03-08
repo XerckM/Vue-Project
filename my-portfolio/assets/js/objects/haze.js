@@ -34,18 +34,25 @@ export class Haze {
         group.add(sprite);
     }
 
-    updateOrbit() {
-        // Calculate the angular speed based on the initial distance (slower for stars further out)
-        let angularSpeed = 0.08 / this.initialDistance;
-
-        // Increment the angle for rotation
-        this.angle += angularSpeed;
-
-        // Calculate the new position using polar coordinates
-        this.position.x = Math.cos(this.angle) * this.initialDistance;
-        this.position.y = Math.sin(this.angle) * this.initialDistance;
-
-        // Update the object's position to simulate rotation
-        this.obj.position.set(this.position.x, this.position.y, this.position.z);
+    updateOrbit(deltaTime) {
+        // Base angular speed, consider making this a parameter or a class property
+        // to easily adjust the simulation
+        const baseSpeed = 0.09; // Adjust this value to control the base rotation speed
+    
+        // Modulate the angular speed inversely with the square root of the initial distance
+        // Adding a small value to avoid division by zero and to ensure smoother behavior for objects very close to the center
+        let angularSpeed = baseSpeed / (Math.sqrt(this.initialDistance) + 0.1);
+    
+        // Use deltaTime to make the motion frame rate independent
+        this.angle += angularSpeed * deltaTime;
+    
+        // Calculate the new position using the updated angle and the original distance from the center
+        let newX = Math.cos(this.angle) * this.initialDistance;
+        let newY = Math.sin(this.angle) * this.initialDistance;
+    
+        // Update the sprite's position
+        if (this.obj) {
+            this.obj.position.set(newX, newY, this.position.z);
+        }
     }
 }

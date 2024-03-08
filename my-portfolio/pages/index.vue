@@ -111,7 +111,7 @@ export default {
     })
     renderer.setSize(innerWidth, innerHeight)
     renderer.setPixelRatio(devicePixelRatio)
-    new OrbitControls(camera, renderer.domElement)
+    const controls = new OrbitControls(camera, renderer.domElement)
 
     // Camera position
     camera.position.z = 20
@@ -228,7 +228,39 @@ export default {
         duration: 1,
         delay: 2,
         onComplete: () => {
-          this.$router.push('/work')
+          this.navigateToWork();
+
+          window.removeEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / innerWidth) * 2 - 1
+            mouse.y = -(event.clientY / innerHeight) * 2 + 1
+          });
+          window.removeEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight
+            camera.updateProjectionMatrix()
+            renderer.setSize(innerWidth, innerHeight)
+          });
+
+          // Dispose Three.js geometries, materials, textures
+          scene.traverse((object) => {
+            if (object.isMesh) {
+              if (object.geometry) object.geometry.dispose();
+              if (object.material) {
+                if (Array.isArray(object.material)) {
+                  object.material.forEach(material => material.dispose());
+                } else {
+                  object.material.dispose();
+                }
+              }
+            }
+          });
+
+          // Dispose of the renderer and remove its canvas
+          if (renderer) {
+            renderer.dispose();
+            renderer.domElement.remove();
+          }
+          
+          controls.dispose();
         }
       })
     })
@@ -356,9 +388,16 @@ export default {
       }
       stars.rotation.x += 0.0005
     }
-
     animate()
-
+  },
+  methods: {
+    navigateToWork() {
+      // Set a flag before navigating
+      sessionStorage.setItem('navigatingFromIndex', 'true');
+      
+      // Navigate to your target page
+      this.$router.push('/work');
+    }
   }
 }
 </script>

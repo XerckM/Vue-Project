@@ -20,3 +20,13 @@ export function spiral(x,y,z,offset) {
     theta += (r/ARM_X_DIST) * SPIRAL
     return new Vector3(r*Math.cos(theta), r*Math.sin(theta), z)
 }
+
+export function spiralArmOffset(distance, armIndex, numArms) {
+    // Calculate the base offset for the spiral arm
+    let baseOffset = (Math.PI * 2 / numArms) * armIndex;
+
+    // Modulate the offset based on the distance to create a spiral pattern
+    let distanceOffset = (distance / ARM_X_DIST) * SPIRAL;
+
+    return baseOffset + distanceOffset;
+}

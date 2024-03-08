@@ -1,14 +1,64 @@
 <template>
-    <div>
-        <canvas ref="workCanvas" data-engine="three.js r146" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
-        <h2 class="text-white exo-2-font text-5xl" style="z-index: 1; position: relative;">MY WORK</h2>
+    <div class="bg-black h-screen px-6 py-12">
+        <canvas ref="workCanvas" data-engine="three.js r146" class="fixed top-0 left-0 w-full h-full z-[-1]"></canvas>
+        <h2 ref="title" class="text-gray-300 exo-2-font text-5xl relative z-10 opacity-0" style="transform: translateY(30px)">CHECK OUT THESE LINKS</h2>
+        <div class="flex space-x-5 z-10">
+            <div ref="links" v-for="link in links" class="py-12 z-10 opacity-0 group" style="transform: translateX(30px)">
+                <!-- Conditional rendering based on link type -->
+                <NuxtLink v-if="link.isInternal" :to="link.url" class="block">
+                    <img :src="link.image.url" alt="link title" class="w-full object-cover" />
+                    <p class="text-gray-300 space-mono-regular text-3xl text-center">{{ link.title }}</p>
+                </NuxtLink>
+                <!-- Fallback to <a> for external links -->
+                <a v-else :href="link.url" target="_blank" rel="noopener noreferrer">
+                    <img :src="link.image.url" alt="link title" class="w-full object-cover" />
+                    <p class="text-gray-300 space-mono-regular text-3xl text-center">{{ link.title }}</p>
+                </a>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
 import gsap from 'gsap'
+import githubImage from '~/static/github.jpg'
+import aboutMeImage from '~/static/aboutme.jpg'
+import codeImage from '~/static/seethecode.jpg'
+import linkedInImage from '~/static/linkedin.jpg'
 
 export default {
+    data() {
+        return {
+            links: 
+            [
+                {
+                    image: { url: aboutMeImage },
+                    title: 'About Me',
+                    url: '/about',
+                    isInternal: true
+                },
+                {
+                    image: { url: githubImage },
+                    title: 'GitHub',
+                    url: 'https://github.com/XerckM/'
+                },
+                {
+                    image: {
+                        url: linkedInImage
+                    },
+                    title: 'LinkedIn',
+                    url: 'https://www.linkedin.com/in/xerckmercado/'
+                },
+                {
+                    image: {
+                        url: codeImage
+                    },
+                    title: "View This Site's Code",
+                    url: 'https://github.com/XerckM/Vue-Project/tree/main/my-portfolio'
+                }
+            ]
+        }
+    },
     async mounted() {
         const { 
             Vector3,
@@ -35,7 +85,7 @@ export default {
             let canvas, renderer, camera, scene, orbit, baseComposer, bloomComposer, overlayComposer, galaxy
 
             const generateBackgroundStars = async (numStars) => {
-                const innerBoundary = 560; // Minimum distance from the galaxy center to start generating stars
+                const innerBoundary = 540; // Minimum distance from the galaxy center to start generating stars
 
                 for (let i = 0; i < numStars; i++) {
                     let starPosition;
@@ -58,53 +108,107 @@ export default {
             }
 
             const initThree = async () => {
+                const navigatingFromIndex = sessionStorage.getItem('navigatingFromIndex');
                 canvas = this.$refs.workCanvas
                 scene = new Scene()
                 scene.position.set(0, 0, 50)
                 scene.fog = new FogExp2(0xEBE2DB, 0.00003)
 
-                camera = new PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 5000000);
-                camera.position.set(1000, 5000, 250000); // Original position
-                camera.up.set(0, 0.5, 1);
-                const lookAtOffset = new Vector3(100, 0, 30);
-                camera.lookAt(lookAtOffset);
-                
-                orbit = new OrbitControls(camera, canvas);
-                orbit.enableDamping = true;
-                orbit.dampingFactor = 0.05;
-                orbit.screenSpacePanning = false;
-                orbit.maxPolarAngle = Math.PI / 2 - Math.PI / 360;
+                if (navigatingFromIndex) {
+                    camera = new PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 5000000);
+                    camera.position.set(1000, 5000, 250000); // Original position
+                    camera.up.set(0, 0.5, 1);
+                    const lookAtOffset = new Vector3(100, 0, 30);
+                    camera.lookAt(lookAtOffset);
+                    
+                    orbit = new OrbitControls(camera, canvas);
+                    orbit.enableDamping = true;
+                    orbit.dampingFactor = 0.05;
+                    orbit.screenSpacePanning = false;
+                    orbit.maxPolarAngle = Math.PI / 2 - Math.PI / 360;
 
-                initRenderPipeline()
-                galaxy = new Galaxy(scene)
+                    initRenderPipeline()
+                    galaxy = new Galaxy(scene)
 
-                gsap.to(camera.position, {
-                    x: 100,
-                    y: 500,
-                    z: 500,
-                    duration: 4, // Duration of the zoom in seconds
-                    ease: 'expoScale',
-                    onUpdate: () => {
-                        camera.lookAt(scene.position);
-                    },
-                    onComplete: () => {
-                        generateBackgroundStars(10000);
-                        gsap.to(scene.rotation, {
-                            x: Math.PI, // Adds 360 degrees in radians to current x rotation
-                            y: Math.PI, // Adds 360 degrees in radians to current y rotation
-                            duration: 5,
-                            ease: 'sine.inOut', // Linear movement for uniform spinning speed
-                        });
-                    }
-                });
+                    gsap.to(camera.position, {
+                        x: 200,
+                        y: 600,
+                        z: 600,
+                        duration: 4, // Duration of the zoom in seconds
+                        ease: 'sine.out',
+                        onUpdate: () => {
+                            camera.lookAt(scene.position);
+                        },
+                        onComplete: () => {
+                            generateBackgroundStars(6000);
+                            gsap.to(scene.rotation, {
+                                x: Math.PI * 2, // Adds 360 degrees in radians to current x rotation
+                                y: Math.PI * 2, // Adds 360 degrees in radians to current y rotation
+                                duration: 5,
+                                ease: 'sine.out', // Linear movement for uniform spinning speed
+                            });
+                        }
+                    });
 
-                // Animate the scene to rotate around both X and Y axes
-                gsap.to(scene.rotation, {
-                    x: Math.PI, // Adds 360 degrees in radians to current x rotation
-                    y: Math.PI, // Adds 360 degrees in radians to current y rotation
-                    duration: 6,
-                    ease: 'sine.in', // Linear movement for uniform spinning speed
-                });
+                    // Animate the scene to rotate around both X and Y axes
+                    gsap.to(scene.rotation, {
+                        x: Math.PI + 3, // Adds 360 degrees in radians to current x rotation
+                        y: Math.PI, // Adds 360 degrees in radians to current y rotation
+                        duration: 5,
+                        ease: 'sine.in', // Linear movement for uniform spinning speed
+                        onComplete: () => {
+                            gsap.to(this.$refs.title, {
+                                opacity: 1,
+                                duration: 2,
+                                delay: 6,
+                                y: 0,
+                                ease: 'expo'
+                            })
+
+                            gsap.to(this.$refs.links, {
+                                opacity: 1,
+                                duration: 2,
+                                delay: 6,
+                                stagger: 0.1,
+                                x: 0,
+                                ease: 'expo'
+                            })
+                        }
+                    });
+                    sessionStorage.removeItem('navigatingFromIndex');
+                } else {
+                    camera = new PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 5000000);
+                    camera.position.set(200, 600, 600); // Original position
+                    camera.up.set(0, 0.5, 1);
+                    const lookAtOffset = new Vector3(100, 0, 30);
+                    camera.lookAt(lookAtOffset);
+
+                    orbit = new OrbitControls(camera, canvas);
+                    orbit.enableDamping = true;
+                    orbit.dampingFactor = 0.05;
+                    orbit.screenSpacePanning = false;
+                    orbit.maxPolarAngle = Math.PI / 2 - Math.PI / 360;
+
+                    initRenderPipeline()
+                    galaxy = new Galaxy(scene)
+
+                    gsap.to(this.$refs.title, {
+                        opacity: 1,
+                        duration: 2,
+                        delay: 1,
+                        y: 0,
+                        ease: 'expo'
+                    });
+
+                    gsap.to(this.$refs.links, {
+                        opacity: 1,
+                        duration: 2,
+                        delay: 1,
+                        stagger: 0.1,
+                        x: 0,
+                        ease: 'expo'
+                    })
+                }
             }
 
             const initRenderPipeline = () => {
@@ -165,7 +269,14 @@ export default {
                 return needResize
             }
 
+            let lastTime = performance.now();
+
             const render = async () => {
+                let currentTime = performance.now();
+                let deltaTime = (currentTime - lastTime) / 1000; // Convert milliseconds to seconds
+                lastTime = currentTime;
+
+
                 await orbit.update()
 
                 if (resizeRendererToDisplaySize(renderer)) {
@@ -175,10 +286,14 @@ export default {
                 }
 
                 // Update orbital positions for stars and haze
-                galaxy.stars.forEach(star => star.updateOrbit());
-                galaxy.haze.forEach(haze => haze.updateOrbit());
+                // galaxy.stars.forEach(star => star.updateOrbit());
+                // galaxy.haze.forEach(haze => haze.updateOrbit());
 
-                galaxy.group.rotation.z += 0.00001;
+                galaxy.innerCoreStars.forEach(star => star.updateOrbit(deltaTime))
+                galaxy.outerCoreStars.forEach(star => star.updateOrbit(deltaTime))
+                galaxy.spiralArmsAndHaze.forEach(haze => haze.updateOrbit(deltaTime))
+
+                // galaxy.group.rotation.z += 0.000009;
 
                 galaxy.updateScale(camera)
                 renderPipeline()
@@ -209,3 +324,37 @@ export default {
     }
 }
 </script>
+
+<style>
+/* Adjust the image size */
+.group img {
+    width: 80vh;
+    height: 80vh;
+    object-fit: cover;
+    margin: 0 auto;
+    display: block;
+    border-radius: 25px;
+}
+
+/* Adjust padding and layout of each group */
+.group {
+  padding: 5px;
+  padding-top: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.group:hover img,
+.group:hover p {
+  transition: 0.3s ease-in-out;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.text-gray-300 {
+  margin-top: 12px;
+}
+</style>
+
